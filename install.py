@@ -13,15 +13,19 @@ with open(req_file) as file:
                 f"install {lib}",
                 f"Swap-Mukham requirement: {lib}")
 
-# Download the ONNX file
-model_url = "https://huggingface.co/henryruhs/roop/resolve/main/inswapper_128.onnx"
-model_filename = "inswapper_128.onnx"
-model_save_path = os.path.join(current_dir, "assets", "pretrained_models", model_filename)
+models_dir = os.path.abspath("models/SwapMuhkan")
+model_url = "https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx"
+model_name = os.path.basename(model_url)
+model_path = os.path.join(models_dir, model_name)
 
-response = requests.get(model_url)
-if response.status_code == 200:
-    with open(model_save_path, "wb") as model_file:
-        model_file.write(response.content)
-    print(f"Model downloaded and saved at {model_save_path}")
-else:
-    print(f"Failed to download the model from {model_url}")
+def download(url, path):
+    request = urllib.request.urlopen(url)
+    total = int(request.headers.get('Content-Length', 0))
+    with tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
+        urllib.request.urlretrieve(url, path, reporthook=lambda count, block_size, total_size: progress.update(block_size))
+
+if not os.path.exists(models_dir):
+    os.makedirs(models_dir)
+
+if not os.path.exists(model_path):
+    download(model_url, model_path)
